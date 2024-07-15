@@ -1,29 +1,11 @@
-import { useEffect, useState } from 'react'
-import Config from '../common/config'
 import { Character } from './types'
+import useResourceList from '../common/hooks/useResourceList'
+import PageResourceListWrapper from '../common/components/PageResourceListWrapper'
 
 const END_POINT = '/character'
 
 export default function CharactersPage() {
-	const [characters, setCharacters] = useState<Character[]>()
+	const { data: characters, pages } = useResourceList<Character[]>(END_POINT)
 
-	useEffect(() => {
-		const getCharacters = async () => {
-			const data = await fetch(`${Config.API_URL}${END_POINT}`).then((res) => res.json())
-
-			setCharacters(data.results)
-		}
-
-		getCharacters()
-	}, [])
-
-	return (
-		<main>
-			<h2>Characters page</h2>
-			<div>
-				<h3>Characters</h3>
-				<ul>{characters && characters.map((c) => <li key={`${c.name}-${c.id}`}>{c.name}</li>)}</ul>
-			</div>
-		</main>
-	)
+	return <PageResourceListWrapper data={characters} pages={pages} resourceType='characters' />
 }
