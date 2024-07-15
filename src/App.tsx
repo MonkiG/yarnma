@@ -20,7 +20,6 @@ function App() {
 		getOptions()
 	}, [])
 
-	console.log(options)
 	return (
 		<AppLayout>
 			{options &&

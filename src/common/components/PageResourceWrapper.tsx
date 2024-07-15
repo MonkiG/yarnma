@@ -4,6 +4,9 @@ import { Episode } from '../../episodes/types'
 import { Location } from '../../locations/types'
 import AppLayout from './AppLayout'
 import { ResourceType } from '../types'
+import { getEpisodeById } from '../../episodes/services'
+import { useEffect, useState } from 'react'
+import { getCharacterById } from '../../characters/services'
 
 interface Props {
 	data?: Character | Location | Episode
@@ -17,7 +20,6 @@ export default function PageResourceWrapper({ data, type }: Props) {
 		episodes: <EpisodeWrapper episode={data as Episode} />
 	}
 
-	data && console.log(Object.entries(data))
 	return (
 		<AppLayout>
 			<main style={{ flexGrow: '1' }}>{data && typeDic[type]}</main>
@@ -26,6 +28,21 @@ export default function PageResourceWrapper({ data, type }: Props) {
 }
 
 const EpisodeWrapper = ({ episode }: { episode: Episode }) => {
+	const [characters, setCharacters] = useState<Character[]>()
+
+	useEffect(() => {
+		;(async () => {
+			const charactersParsed = await Promise.all(
+				episode.characters.map(async (c) => {
+					const { data } = await getCharacterById(Number(c.split('/').slice(-1)))
+					return data
+				})
+			)
+
+			setCharacters(charactersParsed.filter((c) => c !== null))
+		})()
+	}, [episode.characters])
+
 	return (
 		<>
 			<h2>{episode.name}</h2>
@@ -35,9 +52,14 @@ const EpisodeWrapper = ({ episode }: { episode: Episode }) => {
 				<li>
 					Characters in the episode:
 					<ul>
-						{episode.characters.map((c) => (
-							<li key={c}>{c}</li>
-						))}
+						{characters &&
+							characters.map((c) => (
+								<li key={c.id}>
+									<Link to={`/characters/${c.id}`} style={{ textDecoration: 'underline' }}>
+										{c.name}
+									</Link>
+								</li>
+							))}
 					</ul>
 				</li>
 			</ul>
@@ -45,6 +67,19 @@ const EpisodeWrapper = ({ episode }: { episode: Episode }) => {
 	)
 }
 const LocationWrapper = ({ location }: { location: Location }) => {
+	const [residents, setResidents] = useState<Character[]>([])
+	useEffect(() => {
+		;(async () => {
+			const residentsParsed = await Promise.all(
+				location.residents.map(async (r) => {
+					const { data } = await getCharacterById(Number(r.split('/').slice(-1)))
+					return data
+				})
+			)
+
+			setResidents(residentsParsed.filter((r) => r !== null))
+		})()
+	}, [location.residents])
 	return (
 		<>
 			<h2>{location.name}</h2>
@@ -54,9 +89,14 @@ const LocationWrapper = ({ location }: { location: Location }) => {
 				<li>
 					Residents:
 					<ul>
-						{location.residents.map((r) => (
-							<li key={r}>{r}</li>
-						))}
+						{residents &&
+							residents.map((r) => (
+								<li key={r.id}>
+									<Link style={{ textDecoration: 'underline' }} to={`/characters/${r.id}`}>
+										{r.name}
+									</Link>
+								</li>
+							))}
 					</ul>
 				</li>
 			</ul>
@@ -64,7 +104,21 @@ const LocationWrapper = ({ location }: { location: Location }) => {
 	)
 }
 const CharacterWrapper = ({ character }: { character: Character }) => {
-	const getLocationId = (url: string) => url.split('/').slice(-1)
+	const [episodes, setEpisodes] = useState<Episode[]>([])
+
+	const getCharacterId = (url: string) => url.split('/').slice(-1)
+	useEffect(() => {
+		;(async () => {
+			const episodesParsed = await Promise.all(
+				character.episode.map(async (e) => {
+					const { data } = await getEpisodeById(Number(e.split('/').slice(-1)))
+					return data
+				})
+			)
+			setEpisodes(episodesParsed.filter((x) => x !== null))
+		})()
+	}, [character.episode])
+
 	return (
 		<>
 			<picture>
@@ -77,22 +131,29 @@ const CharacterWrapper = ({ character }: { character: Character }) => {
 				<li>Gender: {character.gender}</li>
 				<li>
 					Origin:{' '}
-					<Link to={`/locations/${getLocationId(character.origin.url)}`}>
+					<Link to={`/locations/${getCharacterId(character.origin.url)}`}>
 						{character.origin.name}
 					</Link>
 				</li>
 				<li>
 					Last known location:{' '}
-					<Link to={`/locations/${getLocationId(character.location.url)}`}>
+					<Link to={`/locations/${getCharacterId(character.location.url)}`}>
 						{character.location.name}
 					</Link>
 				</li>
 				<li>
 					Episodes:
 					<ul>
-						{character.episode.map((e) => (
-							<li>{e}</li>
-						))}
+						{episodes &&
+							episodes.map((e) => {
+								return (
+									<li key={`${e.name}-${e.id}`}>
+										<Link to={`/episodes/${e.id}`} style={{ textDecoration: 'underline' }}>
+											{e.name}
+										</Link>
+									</li>
+								)
+							})}
 					</ul>
 				</li>
 			</ul>
