@@ -1,14 +1,11 @@
 import { useParams } from 'wouter'
 import useResource from '../../common/hooks/useResource'
 import { Episode } from '../types'
+import PageResourceWrapper from '../../common/components/PageResourceWrapper'
 
 export default function EpisodePage() {
 	const { id } = useParams()
-	const [episode] = useResource<Episode>('episode', id!)
-	return (
-		<main>
-			<h2>Episode page: {id} </h2>
-			{episode && JSON.stringify(episode)}
-		</main>
-	)
+	const { data: episode } = useResource<Episode>('episode', id!)
+
+	return <PageResourceWrapper data={episode} type='episodes' />
 }
