@@ -16,5 +16,5 @@ export default function useResource<T>(resource: string, id: string) {
 		getResource()
 	}, [resource, id])
 
-	return [data, setData]
+	return { data }
 }
