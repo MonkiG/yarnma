@@ -10,4 +10,14 @@ export interface ApiResponseInfo {
 	prev: null | string
 }
 
+export interface BaseResource {
+	id: number
+	name: string
+	url: string
+	created: string
+}
+
 export type ApiResponseResults<T> = T[]
+
+export type ResourceType = 'characters' | 'episodes' | 'locations'
+export type PageApiEndpoint = '/character' | '/episode' | '/location'

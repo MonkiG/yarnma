@@ -1,6 +1,6 @@
-export interface Character {
-	id: number
-	name: string
+import { BaseResource } from '../common/types'
+
+export interface Character extends BaseResource {
 	status: string
 	species: string
 	type: string
@@ -9,8 +9,6 @@ export interface Character {
 	location: Location
 	image: string
 	episode: string[]
-	url: string
-	created: string
 }
 
 export interface Origin {
